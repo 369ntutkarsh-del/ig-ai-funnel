@@ -1,0 +1,31 @@
+name: Daily Instagram Trend Engine
+
+on:
+  schedule:
+    # Runs daily at 02:30 UTC = 08:00 AM IST
+    - cron: '30 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  run-scraper:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Generate Daily India AI & Tech Scripts
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python trend_engine.py
+      - name: Commit Daily Scripts
+        run: |
+          git config user.name "TrendBot"
+          git config user.email "bot@users.noreply.github.com"
+          git add daily_scripts/
+          git commit -m "Add daily IG AI scripts" || exit 0
+          git push
